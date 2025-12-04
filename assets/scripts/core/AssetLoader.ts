@@ -1,7 +1,7 @@
-import { Prefab, resources, SpriteFrame, assetManager, Asset, JsonAsset, AudioClip } from 'cc';
+import { Prefab, resources, SpriteFrame, assetManager, Asset, JsonAsset, AudioClip, AssetManager } from 'cc';
 
 export class AssetLoader {
-  private readonly bundleCache: Map<string, assetManager.Bundle> = new Map();
+  private readonly bundleCache: Map<string, AssetManager.Bundle> = new Map();
 
   /** Load prefab (optionally from bundle under bundles/). */
   loadPrefab(path: string, bundleName?: string): Promise<Prefab> {
@@ -19,7 +19,7 @@ export class AssetLoader {
   }
 
   loadJson<T = any>(path: string, bundleName?: string): Promise<T> {
-    return this.load(path, JsonAsset, bundleName).then((asset) => asset.json as T);
+    return this.load(path, JsonAsset, bundleName).then((asset) => (asset as JsonAsset).json as T);
   }
 
   preload(path: string, type: typeof Asset, bundleName?: string): Promise<void> {
@@ -96,7 +96,7 @@ export class AssetLoader {
     });
   }
 
-  private loadBundle(name: string): Promise<assetManager.Bundle> {
+  private loadBundle(name: string): Promise<AssetManager.Bundle> {
     if (this.bundleCache.has(name)) {
       return Promise.resolve(this.bundleCache.get(name)!);
     }
