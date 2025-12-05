@@ -18,7 +18,7 @@ export class AutoSpinPanel extends Component {
   options: number[] = [10, 25, 50, 100];
 
   private readonly events: EventBus = GlobalEventBus;
-  private enabled = false;
+  private isAutoEnabled = false;
   private selectedCountIndex = 0;
 
   onEnable(): void {
@@ -30,7 +30,7 @@ export class AutoSpinPanel extends Component {
   }
 
   setAuto(enabled: boolean, remaining?: number): void {
-    this.enabled = enabled;
+    this.isAutoEnabled = enabled;
     if (this.statusLabel) this.statusLabel.string = enabled ? 'Auto: ON' : 'Auto: OFF';
     if (remaining !== undefined && this.countLabel) {
       this.countLabel.string = `x${remaining}`;
@@ -47,10 +47,10 @@ export class AutoSpinPanel extends Component {
   }
 
   private toggle(): void {
-    this.setAuto(!this.enabled);
+    this.setAuto(!this.isAutoEnabled);
     const count = this.options[this.selectedCountIndex] ?? 0;
-    this.events.emit('SLOT_AUTO_SPIN_CHANGED', this.enabled, count);
-    if (this.enabled) {
+    this.events.emit('SLOT_AUTO_SPIN_CHANGED', this.isAutoEnabled, count);
+    if (this.isAutoEnabled) {
       this.events.emit('SLOT_SPIN_REQUESTED');
     }
   }

@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "b875d22b-baa3-4264-a7b3-faf88d7e9c86",
+  "uuid": "c0d2882d-899a-45e3-9175-fb61b58a0f02",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "BigWinIcon"
+    "syncNodeName": "AutoSpinPanel"
   }
 }
