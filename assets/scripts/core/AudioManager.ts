@@ -1,10 +1,11 @@
 import { AudioClip, AudioSource, resources } from 'cc';
-import { EventBus } from './EventBus';
+import { EventBus, GlobalEventBus } from './EventBus';
 
 /**
  * Handles BGM, SFX, and voice playback with simple controls.
  */
 export class AudioManager {
+  private static instance: AudioManager | null = null;
   private bgmSource: AudioSource | null = null;
   private sfxSource: AudioSource | null = null;
   private voiceSource: AudioSource | null = null;
@@ -14,8 +15,15 @@ export class AudioManager {
   private voiceVolume = 1;
   private readonly eventBus?: EventBus;
 
-  constructor(eventBus?: EventBus) {
-    this.eventBus = eventBus;
+  private constructor(eventBus?: EventBus) {
+    this.eventBus = eventBus ?? GlobalEventBus;
+  }
+
+  static getInstance(eventBus?: EventBus): AudioManager {
+    if (!AudioManager.instance) {
+      AudioManager.instance = new AudioManager(eventBus);
+    }
+    return AudioManager.instance;
   }
 
   bindBGMSource(source: AudioSource): void {

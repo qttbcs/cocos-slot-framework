@@ -109,6 +109,30 @@ assets/
     Slot_Candy/
 ```
 
+## 🗂️ Scripts Hierarchy (summary)
+- `core/` system singletons  
+  - `GameManager` bootstrap + global state, EventBus, managers  
+  - `SlotStateMachine` slot state flow  
+  - `AudioManager`, `PopupManager`, `ToastManager`, `AssetLoader`, `TimeService`, `EventBus`
+- `game/` slot logic  
+  - `reel/` reel config + controllers (staggered spin, infinite scroll)  
+  - `symbol/` symbol view/config with highlight/blur  
+  - `result/` matrix, paylines, evaluator  
+  - `spin/` spin lifecycle + input handling  
+  - `fx/` win effects, coins, big-win shader
+- `ui/` HUD + popups + lobby + loading  
+  - `common/` shared UI behaviors (button scale, toggles, progress)  
+  - `hud/` balance/bet/auto-spin panels, spin button controller  
+  - `popups/` base tween + settings/result/pause/paytable popups  
+  - `lobby/` list + item binding, load bundle on select  
+  - `loading/` progress/tip with fake progress helper
+- `systems/` integration  
+  - `network/` SlotApiClient (mock/real HTTP+WS), SlotSession (token/balance sync)  
+  - `storage/` PlayerPrefs, SettingsRepository (audio/bet/autospin)  
+  - `platform/` DeviceInfo, SafeAreaHelper
+- `data/` configs and types  
+  - `SlotGameConfig`, `SymbolDefinitions`, `PaytableData`, `types/SlotTypes`
+
 ## 🧠 Architecture
 ### 1. Core Layer
 - GameManager

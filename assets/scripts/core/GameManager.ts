@@ -28,10 +28,10 @@ export class GameManager extends Component {
   toastRoot: Node | null = null;
 
   readonly eventBus: EventBus = GlobalEventBus;
-  readonly stateMachine: SlotStateMachine = new SlotStateMachine(this.eventBus);
-  readonly audio: AudioManager = new AudioManager(this.eventBus);
-  readonly popups: PopupManager = new PopupManager();
-  readonly toasts: ToastManager = new ToastManager();
+  stateMachine!: SlotStateMachine;
+  audio!: AudioManager;
+  popups!: PopupManager;
+  toasts!: ToastManager;
   readonly assets: AssetLoader = new AssetLoader();
   readonly time: TimeService = new TimeService();
 
@@ -41,6 +41,12 @@ export class GameManager extends Component {
       return;
     }
     GameManager.instance = this;
+
+    this.stateMachine = new SlotStateMachine(this.eventBus);
+    this.audio = AudioManager.getInstance(this.eventBus);
+    this.popups = PopupManager.getInstance();
+    this.toasts = ToastManager.getInstance();
+
     this.popups.bindRoot(this.popupRoot);
     this.toasts.bindRoot(this.toastRoot);
   }

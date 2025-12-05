@@ -8,14 +8,22 @@ interface ToastConfig {
 }
 
 export class ToastManager {
+  private static instance: ToastManager | null = null;
   private root: Node | null = null;
   private readonly queue: ToastConfig[] = [];
   private readonly loader: AssetLoader;
   private readonly pools: Map<string, Node[]> = new Map();
   private showing = false;
 
-  constructor(loader: AssetLoader = new AssetLoader()) {
+  private constructor(loader: AssetLoader = new AssetLoader()) {
     this.loader = loader;
+  }
+
+  static getInstance(loader?: AssetLoader): ToastManager {
+    if (!ToastManager.instance) {
+      ToastManager.instance = new ToastManager(loader);
+    }
+    return ToastManager.instance;
   }
 
   bindRoot(root: Node | null): void {

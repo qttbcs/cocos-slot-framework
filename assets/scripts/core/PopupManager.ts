@@ -10,12 +10,20 @@ interface PopupInstance {
  * Stack-based popup handler to ensure modal ordering.
  */
 export class PopupManager {
+  private static instance: PopupManager | null = null;
   private root: Node | null = null;
   private readonly stack: PopupInstance[] = [];
   private readonly loader: AssetLoader;
 
-  constructor(loader: AssetLoader = new AssetLoader()) {
+  private constructor(loader: AssetLoader = new AssetLoader()) {
     this.loader = loader;
+  }
+
+  static getInstance(loader?: AssetLoader): PopupManager {
+    if (!PopupManager.instance) {
+      PopupManager.instance = new PopupManager(loader);
+    }
+    return PopupManager.instance;
   }
 
   bindRoot(root: Node | null): void {
