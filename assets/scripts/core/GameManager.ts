@@ -1,15 +1,24 @@
-import { _decorator, Component, Node, director, UITransform, BlockInputEvents } from 'cc';
-import { SlotStateMachine } from './SlotStateMachine';
-import { EventBus, GlobalEventBus } from './EventBus';
-import { AudioManager } from './AudioManager';
-import { PopupManager } from './PopupManager';
-import { ToastManager } from './ToastManager';
-import { AssetLoader } from './AssetLoader';
-import { TimeService } from './TimeService';
+import {
+  _decorator,
+  Component,
+  Node,
+  director,
+  Director,
+  UITransform,
+  BlockInputEvents,
+  Widget,
+} from "cc";
+import { SlotStateMachine } from "./SlotStateMachine";
+import { EventBus, GlobalEventBus } from "./EventBus";
+import { AudioManager } from "./AudioManager";
+import { PopupManager } from "./PopupManager";
+import { ToastManager } from "./ToastManager";
+import { AssetLoader } from "./AssetLoader";
+import { TimeService } from "./TimeService";
 
 const { ccclass, property } = _decorator;
 
-@ccclass('GameManager')
+@ccclass("GameManager")
 export class GameManager extends Component {
   // Singleton instance to access global services and state.
   static instance: GameManager | null = null;
@@ -32,6 +41,7 @@ export class GameManager extends Component {
   readonly assets: AssetLoader = new AssetLoader();
   readonly time: TimeService = new TimeService();
   private readonly POPUP_PRIORITY = 9999;
+  private readonly onSceneLoaded = () => this.attachRootsToCanvas();
 
   onLoad(): void {
     if (GameManager.instance && GameManager.instance !== this) {
@@ -43,25 +53,12 @@ export class GameManager extends Component {
       director.addPersistRootNode(this.node);
     }
 
-    // Auto-create roots if not assigned
-    if (!this.popupRoot) {
-      this.popupRoot = new Node('PopupRoot');
-      this.popupRoot.setParent(this.node);
-    }
-    this.ensureUiPriority(this.popupRoot, this.POPUP_PRIORITY);
-    this.ensureBlockInput(this.popupRoot);
-    if (!this.toastRoot) {
-      this.toastRoot = new Node('ToastRoot');
-      this.toastRoot.setParent(this.node);
-    }
-
     this.stateMachine = new SlotStateMachine(this.eventBus);
     this.audio = AudioManager.getInstance(this.eventBus);
     this.popups = PopupManager.getInstance();
     this.toasts = ToastManager.getInstance();
 
-    this.popups.bindRoot(this.popupRoot);
-    this.toasts.bindRoot(this.toastRoot);
+    director.on(Director.EVENT_AFTER_SCENE_LAUNCH, this.onSceneLoaded, this);
   }
 
   private ensureUiPriority(node: Node | null, priority: number): void {
@@ -70,23 +67,37 @@ export class GameManager extends Component {
     ui.priority = priority;
   }
 
-  private ensureBlockInput(node: Node | null): void {
+  private ensureFullScreen(node: Node | null): void {
     if (!node) return;
-    if (!node.getComponent(BlockInputEvents)) {
-      node.addComponent(BlockInputEvents);
+    const ui = node.getComponent(UITransform) ?? node.addComponent(UITransform);
+    const widget = node.getComponent(Widget) ?? node.addComponent(Widget);
+    widget.isAlignTop = true;
+    widget.isAlignBottom = true;
+    widget.isAlignLeft = true;
+    widget.isAlignRight = true;
+    widget.top = 0;
+    widget.bottom = 0;
+    widget.left = 0;
+    widget.right = 0;
+    // Ensure content size exists (align edges will stretch to parent canvas size at runtime).
+    if (ui.width === 0 && ui.height === 0 && node.parent) {
+      const parentUi = node.parent.getComponent(UITransform);
+      if (parentUi) {
+        ui.setContentSize(parentUi.contentSize);
+      }
     }
   }
 
   static getInstance(): GameManager {
     if (!GameManager.instance) {
-      throw new Error('GameManager not initialized yet');
+      throw new Error("GameManager not initialized yet");
     }
     return GameManager.instance;
   }
 
   start(): void {
-    this.stateMachine.changeState('IDLE');
-    this.eventBus.emit('GAME_READY');
+    this.stateMachine.changeState("IDLE");
+    this.eventBus.emit("GAME_READY");
   }
 
   setBalance(value: number): void {
@@ -118,16 +129,43 @@ export class GameManager extends Component {
     if (GameManager.instance === this) {
       GameManager.instance = null;
     }
+    director.off(Director.EVENT_AFTER_SCENE_LAUNCH, this.onSceneLoaded, this);
     this.eventBus.clear();
     this.time.dispose();
+  }
+
+  private attachRootsToCanvas(): void {
+    const scene = director.getScene();
+    if (!scene) return;
+    const canvas = scene.getChildByName("Canvas");
+    if (!canvas) return;
+
+    // Attach or create popup root
+    if (!this.popupRoot || !this.popupRoot.isValid) {
+      this.popupRoot = new Node("PopupRoot");
+    }
+    this.popupRoot.setParent(canvas);
+    this.ensureFullScreen(this.popupRoot);
+    this.ensureUiPriority(this.popupRoot, this.POPUP_PRIORITY);
+
+    // Attach or create toast root
+    if (!this.toastRoot || !this.toastRoot.isValid) {
+      this.toastRoot = new Node("ToastRoot");
+    }
+    this.toastRoot.setParent(canvas);
+    this.ensureFullScreen(this.toastRoot);
+
+    // Bind to popup and toast managers
+    this.popups.bindRoot(this.popupRoot);
+    this.toasts.bindRoot(this.toastRoot);
   }
 }
 
 export const GameEvents = {
-  GAME_READY: 'GAME_READY',
-  BALANCE_CHANGED: 'BALANCE_CHANGED',
-  BET_CHANGED: 'BET_CHANGED',
-  PAUSE_CHANGED: 'PAUSE_CHANGED',
-  AUTO_SPIN_CHANGED: 'AUTO_SPIN_CHANGED',
-  SCENE_CHANGED: 'SCENE_CHANGED',
+  GAME_READY: "GAME_READY",
+  BALANCE_CHANGED: "BALANCE_CHANGED",
+  BET_CHANGED: "BET_CHANGED",
+  PAUSE_CHANGED: "PAUSE_CHANGED",
+  AUTO_SPIN_CHANGED: "AUTO_SPIN_CHANGED",
+  SCENE_CHANGED: "SCENE_CHANGED",
 };
