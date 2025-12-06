@@ -1,4 +1,4 @@
-import { _decorator, Component, tween, Vec3, Button } from 'cc';
+import { _decorator, Component, tween, Vec3, Button, Node } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -13,18 +13,18 @@ export class ButtonScaleEffect extends Component {
   onEnable(): void {
     const btn = this.getComponent(Button);
     if (btn) {
-      btn.node.on(Button.EventType.TOUCH_START, this.onPress, this);
-      btn.node.on(Button.EventType.TOUCH_END, this.onRelease, this);
-      btn.node.on(Button.EventType.TOUCH_CANCEL, this.onRelease, this);
+      btn.node.on(Node.EventType.TOUCH_START, this.onPress, this);
+      btn.node.on(Node.EventType.TOUCH_END, this.onRelease, this);
+      btn.node.on(Node.EventType.TOUCH_CANCEL, this.onRelease, this);
     }
   }
 
   onDisable(): void {
     const btn = this.getComponent(Button);
     if (btn) {
-      btn.node.off(Button.EventType.TOUCH_START, this.onPress, this);
-      btn.node.off(Button.EventType.TOUCH_END, this.onRelease, this);
-      btn.node.off(Button.EventType.TOUCH_CANCEL, this.onRelease, this);
+      btn.node.off(Node.EventType.TOUCH_START, this.onPress, this);
+      btn.node.off(Node.EventType.TOUCH_END, this.onRelease, this);
+      btn.node.off(Node.EventType.TOUCH_CANCEL, this.onRelease, this);
     }
   }
 

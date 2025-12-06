@@ -96,7 +96,7 @@ export class AssetLoader {
     });
   }
 
-  private loadBundle(name: string): Promise<AssetManager.Bundle> {
+  loadBundle(name: string): Promise<AssetManager.Bundle> {
     if (this.bundleCache.has(name)) {
       return Promise.resolve(this.bundleCache.get(name)!);
     }

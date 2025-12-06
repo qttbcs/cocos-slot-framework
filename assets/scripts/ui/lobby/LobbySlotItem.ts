@@ -4,7 +4,7 @@ import { EventBus, GlobalEventBus } from '../../core/EventBus';
 
 const { ccclass, property } = _decorator;
 
-interface LobbySlotData {
+export interface LobbySlotData {
   id: string;
   title: string;
   icon: string;
@@ -43,6 +43,7 @@ export class LobbySlotItem extends Component {
   }
 
   private handlePlay(): void {
+    console.log('Slot item clicked:', this.data);
     if (!this.data) return;
     this.events.emit('LOBBY_SLOT_SELECTED', this.data.id);
   }

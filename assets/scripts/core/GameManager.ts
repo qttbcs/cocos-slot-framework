@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, director, UITransform, BlockInputEvents } from 'cc';
 import { SlotStateMachine } from './SlotStateMachine';
 import { EventBus, GlobalEventBus } from './EventBus';
 import { AudioManager } from './AudioManager';
@@ -21,11 +21,8 @@ export class GameManager extends Component {
   autoSpin = false;
   currentScene: string | null = null;
 
-  @property(Node)
-  popupRoot: Node | null = null;
-
-  @property(Node)
-  toastRoot: Node | null = null;
+  private popupRoot: Node | null = null;
+  private toastRoot: Node | null = null;
 
   readonly eventBus: EventBus = GlobalEventBus;
   stateMachine!: SlotStateMachine;
@@ -34,6 +31,7 @@ export class GameManager extends Component {
   toasts!: ToastManager;
   readonly assets: AssetLoader = new AssetLoader();
   readonly time: TimeService = new TimeService();
+  private readonly POPUP_PRIORITY = 9999;
 
   onLoad(): void {
     if (GameManager.instance && GameManager.instance !== this) {
@@ -41,6 +39,21 @@ export class GameManager extends Component {
       return;
     }
     GameManager.instance = this;
+    if (!director.isPersistRootNode(this.node)) {
+      director.addPersistRootNode(this.node);
+    }
+
+    // Auto-create roots if not assigned
+    if (!this.popupRoot) {
+      this.popupRoot = new Node('PopupRoot');
+      this.popupRoot.setParent(this.node);
+    }
+    this.ensureUiPriority(this.popupRoot, this.POPUP_PRIORITY);
+    this.ensureBlockInput(this.popupRoot);
+    if (!this.toastRoot) {
+      this.toastRoot = new Node('ToastRoot');
+      this.toastRoot.setParent(this.node);
+    }
 
     this.stateMachine = new SlotStateMachine(this.eventBus);
     this.audio = AudioManager.getInstance(this.eventBus);
@@ -49,6 +62,19 @@ export class GameManager extends Component {
 
     this.popups.bindRoot(this.popupRoot);
     this.toasts.bindRoot(this.toastRoot);
+  }
+
+  private ensureUiPriority(node: Node | null, priority: number): void {
+    if (!node) return;
+    const ui = node.getComponent(UITransform) ?? node.addComponent(UITransform);
+    ui.priority = priority;
+  }
+
+  private ensureBlockInput(node: Node | null): void {
+    if (!node) return;
+    if (!node.getComponent(BlockInputEvents)) {
+      node.addComponent(BlockInputEvents);
+    }
   }
 
   static getInstance(): GameManager {
